@@ -1,0 +1,36 @@
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Gradle
+.gradle/
+build/
+
+# Kotlin
+bin/
+*.kompiled
+
+# Certificate / Secret files (based on publishing guide)
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.directory
+*.swp
+*.bak

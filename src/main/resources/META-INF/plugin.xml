@@ -1,0 +1,36 @@
+<idea-plugin>
+    <id>com.architect.certviewer</id>
+    <name>X.509 Certificate Viewer</name>
+    <vendor email="support@architect.com" url="https://www.architect.com">Architect Senior</vendor>
+
+    <description><![CDATA[
+    Expert tool for inspecting X.509 certificates (PEM, DER, CRT, CER).
+    Features:
+    <ul>
+      <li>Detail view of Subject, Issuer, Serial Number.</li>
+      <li>Validity period tracking.</li>
+      <li>Extension inspection.</li>
+    </ul>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Support for dynamic loading (no restart required) -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="X509 Certificate Viewer" 
+                    secondary="true" 
+                    icon="AllIcons.General.ExternalTools" 
+                    anchor="right" 
+                    factoryClass="com.architect.certviewer.ViewerToolWindowFactory"/>
+                    
+        <fileEditorProvider implementation="com.architect.certviewer.ViewerEditorProvider"/>
+        
+        <fileType name="Certificate File" 
+                  implementationClass="com.architect.certviewer.CertificateFileType" 
+                  extensions="pem;crt;cer;der;p12;pfx;jks;jceks"/>
+    </extensions>
+
+    <actions>
+        <!-- Add actions here -->
+    </actions>
+</idea-plugin>
