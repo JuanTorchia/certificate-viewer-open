@@ -57,7 +57,19 @@ class X509ParserService {
     fun parsePkcs12(data: ByteArray, password: CharArray?): List<X509Certificate> = parseKeystore(data, password, "PKCS12")
 
 
+    fun getFingerprint(cert: X509Certificate, algorithm: String): String {
+        return try {
+            val md = java.security.MessageDigest.getInstance(algorithm)
+            val der = cert.encoded
+            val digest = md.digest(der)
+            digest.joinToString(":") { "%02X".format(it) }
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+    }
+
     private fun cleanPem(pem: String): String {
+
         return pem.replace("-----BEGIN CERTIFICATE-----", "")
             .replace("-----END CERTIFICATE-----", "")
             .replace("\\s".toRegex(), "")
