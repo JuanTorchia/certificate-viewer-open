@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.architect.certviewer</id>
     <name>X.509 Certificate Viewer</name>
-    <vendor email="support@architect.com" url="https://www.architect.com">Architect Senior</vendor>
+    <vendor email="me@juanchi.dev" url="https://www.architect.com">Architect Senior</vendor>
 
     <description><![CDATA[
     Expert tool for inspecting X.509 certificates (PEM, DER, CRT, CER).
