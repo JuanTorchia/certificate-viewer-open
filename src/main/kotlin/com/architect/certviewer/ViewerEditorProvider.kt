@@ -35,14 +35,23 @@ class ViewerEditorProvider : FileEditorProvider, DumbAware {
 class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(), FileEditor {
     private val view = CertificateDetailView()
 
+    @Volatile
+    private var disposed = false
+
     init {
-        loadCertificate()
+        // createEditor() runs on the EDT. Reading the file and parsing it are
+        // slow operations (keystores are allowed up to 10 MiB and the password
+        // prompt is modal), so do that on a pooled thread and let the view fill
+        // in when the result is ready.
+        view.displayLoading()
+        ApplicationManager.getApplication().executeOnPooledThread { loadCertificate() }
     }
 
     private fun loadCertificate() {
+        if (disposed) return
         val parser = service<X509ParserService>()
         val extension = file.extension?.lowercase() ?: ""
-        
+
         try {
             val keystoreType = when (extension) {
                 "p12", "pfx" -> "PKCS12"
@@ -80,13 +89,20 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
                 
                 if (initialCerts != null && initialCerts.isNotEmpty()) {
                     certs = initialCerts
-                } else {
+                } else if (!disposed) {
                     // Password likely required
                     val app = ApplicationManager.getApplication()
                     val showDialogAndParse = {
-                        val dialog = com.architect.certviewer.ui.PasswordDialog()
+                        val dialog = com.architect.certviewer.ui.PasswordDialog(keystoreType)
                         if (dialog.showAndGet()) {
-                            val ksCerts = tryParse(dialog.getPassword())
+                            val password = dialog.getPassword()
+                            val ksCerts = try {
+                                tryParse(password)
+                            } finally {
+                                // Keep the keystore password out of the heap
+                                // once it has served its purpose.
+                                password.fill('\u0000')
+                            }
                             if (ksCerts != null && ksCerts.isNotEmpty()) {
                                 certs = ksCerts
                             } else {
@@ -112,7 +128,7 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
                 if (derCert != null) {
                     view.displayCertificate(derCert)
                 } else {
-                    val certs = parser.parseCertificates(String(content))
+                    val certs = parser.parseCertificates(String(content, Charsets.UTF_8))
                     if (certs.isNotEmpty()) {
                         view.displayCertificates(certs)
                     } else {
@@ -121,7 +137,9 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
                 }
             }
         } catch (e: Exception) {
-            view.displayError("Error loading certificate: ${e.message}")
+            if (!disposed) {
+                view.displayError("Error loading certificate: ${e.message}")
+            }
         }
     }
 
@@ -134,5 +152,7 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
     override fun isValid(): Boolean = true
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
-    override fun dispose() {}
+    override fun dispose() {
+        disposed = true
+    }
 }

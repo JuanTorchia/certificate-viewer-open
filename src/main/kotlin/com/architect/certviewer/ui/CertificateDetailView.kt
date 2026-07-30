@@ -16,6 +16,8 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.geom.RoundRectangle2D
+import java.security.cert.CertificateExpiredException
+import java.security.cert.CertificateNotYetValidException
 import java.security.cert.X509Certificate
 import java.util.*
 import javax.swing.JPanel
@@ -44,6 +46,23 @@ class CertificateDetailView {
         scrollContent.border = JBUI.Borders.emptyRight(10)
         
         content.add(scrollPane, BorderLayout.CENTER)
+    }
+
+    /** Placeholder shown while the file is read and parsed off the EDT. */
+    fun displayLoading() {
+        ApplicationManager.getApplication().invokeLater {
+            statusLabel.text = "Loading certificate..."
+            statusLabel.foreground = UIUtil.getLabelForeground()
+            scrollContent.removeAll()
+
+            val loadingPanel = JPanel(BorderLayout())
+            loadingPanel.isOpaque = false
+            loadingPanel.add(statusLabel, BorderLayout.WEST)
+
+            scrollContent.add(loadingPanel, BorderLayout.NORTH)
+            content.revalidate()
+            content.repaint()
+        }
     }
 
     fun displayCertificates(certs: List<X509Certificate>) {
@@ -196,8 +215,10 @@ class CertificateDetailView {
             } else {
                 StatusInfo("Valid", AllIcons.General.InspectionsOK, Color(80, 200, 80))
             }
-        } catch (e: Exception) {
+        } catch (e: CertificateExpiredException) {
             StatusInfo("Expired", AllIcons.General.Error, UIUtil.getErrorForeground())
+        } catch (e: CertificateNotYetValidException) {
+            StatusInfo("Not Yet Valid", AllIcons.General.Warning, JBColor.ORANGE)
         }
     }
 

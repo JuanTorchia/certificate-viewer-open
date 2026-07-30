@@ -90,6 +90,25 @@ class X509ParserServiceTest {
     }
 
     @Test
+    fun requiresPemArmorForSingleCertificate() {
+        val headerless = TEST_CERTIFICATE_PEM
+            .replace("-----BEGIN CERTIFICATE-----", "")
+            .replace("-----END CERTIFICATE-----", "")
+
+        assertNull(parser.parseCertificate(headerless))
+    }
+
+    @Test
+    fun parseCertificateReturnsFirstBlockOfChain() {
+        val chain = TEST_CERTIFICATE_PEM + "\n" + SECOND_CERTIFICATE_PEM
+
+        val cert = parser.parseCertificate(chain)
+
+        assertNotNull(cert)
+        assertEquals("CN=Test Certificate,O=Certificate Viewer,C=US", cert!!.subjectX500Principal.name)
+    }
+
+    @Test
     fun parsesMultiCertificatePemChain() {
         val chain = TEST_CERTIFICATE_PEM + "\n" + SECOND_CERTIFICATE_PEM
 

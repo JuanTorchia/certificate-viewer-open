@@ -17,11 +17,16 @@ updates:
     # CodeQL's Java extractor does not support Kotlin 2.4.x yet, so these
     # updates break the CodeQL workflow (see PR #36: "Kotlin version 2.4.10
     # is too recent"). Drop this ignore once CodeQL adds support.
+    #
+    # Use a comparison requirement, not a "2.4.x" wildcard: the Gradle/Maven
+    # ecosystem parses these as Maven version requirements, and "2.4.x" matches
+    # nothing there. The updater logged an empty "Ignored versions:" list and
+    # opened PR #39 with Kotlin 2.4.10 anyway.
     ignore:
       - dependency-name: "org.jetbrains.kotlin.jvm"
-        versions: ["2.4.x"]
+        versions: [">= 2.4.0"]
       - dependency-name: "org.jetbrains.kotlin:kotlin-stdlib"
-        versions: ["2.4.x"]
+        versions: [">= 2.4.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
