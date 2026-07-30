@@ -46,6 +46,23 @@ class CertificateDetailView {
         content.add(scrollPane, BorderLayout.CENTER)
     }
 
+    /** Placeholder shown while the file is read and parsed off the EDT. */
+    fun displayLoading() {
+        ApplicationManager.getApplication().invokeLater {
+            statusLabel.text = "Loading certificate..."
+            statusLabel.foreground = UIUtil.getLabelForeground()
+            scrollContent.removeAll()
+
+            val loadingPanel = JPanel(BorderLayout())
+            loadingPanel.isOpaque = false
+            loadingPanel.add(statusLabel, BorderLayout.WEST)
+
+            scrollContent.add(loadingPanel, BorderLayout.NORTH)
+            content.revalidate()
+            content.repaint()
+        }
+    }
+
     fun displayCertificates(certs: List<X509Certificate>) {
         ApplicationManager.getApplication().invokeLater {
             scrollContent.removeAll()
