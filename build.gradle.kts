@@ -5,8 +5,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij.platform") version "2.17.0"
-    id("org.jetbrains.kotlin.jvm") version "2.3.20"
+    id("org.jetbrains.intellij.platform") version "2.18.1"
+    id("org.jetbrains.kotlin.jvm") version "2.3.21"
 }
 
 group = "com.architect"
@@ -38,11 +38,11 @@ dependencies {
     }
 
     testImplementation("junit:junit:4.13.2")
-    add("integrationTestImplementation", "org.junit.jupiter:junit-jupiter:5.10.2")
-    add("integrationTestImplementation", "org.jetbrains.kotlin:kotlin-stdlib:2.3.20-RC2")
-    add("integrationTestImplementation", "org.kodein.di:kodein-di-jvm:7.20.2")
-    add("integrationTestImplementation", "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
-    add("integrationTestRuntimeOnly", "org.junit.platform:junit-platform-launcher:1.10.2")
+    add("integrationTestImplementation", "org.junit.jupiter:junit-jupiter:6.1.2")
+    add("integrationTestImplementation", "org.jetbrains.kotlin:kotlin-stdlib:2.4.0-RC2")
+    add("integrationTestImplementation", "org.kodein.di:kodein-di-jvm:7.33.0")
+    add("integrationTestImplementation", "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
+    add("integrationTestRuntimeOnly", "org.junit.platform:junit-platform-launcher:6.1.2")
 }
 
 java {
