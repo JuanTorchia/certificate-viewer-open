@@ -93,9 +93,16 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
                     // Password likely required
                     val app = ApplicationManager.getApplication()
                     val showDialogAndParse = {
-                        val dialog = com.architect.certviewer.ui.PasswordDialog()
+                        val dialog = com.architect.certviewer.ui.PasswordDialog(keystoreType)
                         if (dialog.showAndGet()) {
-                            val ksCerts = tryParse(dialog.getPassword())
+                            val password = dialog.getPassword()
+                            val ksCerts = try {
+                                tryParse(password)
+                            } finally {
+                                // Keep the keystore password out of the heap
+                                // once it has served its purpose.
+                                password.fill('\u0000')
+                            }
                             if (ksCerts != null && ksCerts.isNotEmpty()) {
                                 certs = ksCerts
                             } else {
@@ -121,7 +128,7 @@ class CertificateFileEditor(private val file: VirtualFile) : UserDataHolderBase(
                 if (derCert != null) {
                     view.displayCertificate(derCert)
                 } else {
-                    val certs = parser.parseCertificates(String(content))
+                    val certs = parser.parseCertificates(String(content, Charsets.UTF_8))
                     if (certs.isNotEmpty()) {
                         view.displayCertificates(certs)
                     } else {

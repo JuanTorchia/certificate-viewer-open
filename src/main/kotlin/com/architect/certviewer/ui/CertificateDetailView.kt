@@ -16,6 +16,8 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.geom.RoundRectangle2D
+import java.security.cert.CertificateExpiredException
+import java.security.cert.CertificateNotYetValidException
 import java.security.cert.X509Certificate
 import java.util.*
 import javax.swing.JPanel
@@ -213,8 +215,10 @@ class CertificateDetailView {
             } else {
                 StatusInfo("Valid", AllIcons.General.InspectionsOK, Color(80, 200, 80))
             }
-        } catch (e: Exception) {
+        } catch (e: CertificateExpiredException) {
             StatusInfo("Expired", AllIcons.General.Error, UIUtil.getErrorForeground())
+        } catch (e: CertificateNotYetValidException) {
+            StatusInfo("Not Yet Valid", AllIcons.General.Warning, JBColor.ORANGE)
         }
     }
 

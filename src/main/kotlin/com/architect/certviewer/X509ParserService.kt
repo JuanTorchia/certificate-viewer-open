@@ -14,18 +14,13 @@ class X509ParserService {
 
     private val cf = CertificateFactory.getInstance("X.509")
 
-    fun parseCertificate(data: String): X509Certificate? {
-        return try {
-            if (data.toByteArray(Charsets.UTF_8).size > MAX_CERTIFICATE_BYTES) return null
-            val cleanData = cleanPem(data)
-            val decoded = Base64.getDecoder().decode(cleanData)
-            if (decoded.size > MAX_CERTIFICATE_BYTES) return null
-            cf.generateCertificate(ByteArrayInputStream(decoded)) as? X509Certificate
-        } catch (e: Exception) {
-            // Log error in production
-            null
-        }
-    }
+    /**
+     * Parses the first PEM certificate block in [data], or returns null when
+     * there is none. Delegates to [parseCertificates] so single-certificate and
+     * chain input go through exactly one PEM implementation; PEM armor
+     * (`-----BEGIN CERTIFICATE-----`) is required.
+     */
+    fun parseCertificate(data: String): X509Certificate? = parseCertificates(data).firstOrNull()
 
     /**
      * Parses all PEM certificate blocks in [data], in file order.
@@ -64,29 +59,21 @@ class X509ParserService {
         }
 
         val certs = mutableListOf<X509Certificate>()
-        try {
-            val ks = java.security.KeyStore.getInstance(type)
-            ks.load(ByteArrayInputStream(data), password)
-            val aliases = ks.aliases()
-            while (aliases.hasMoreElements()) {
-                val alias = aliases.nextElement()
-                if (ks.isCertificateEntry(alias)) {
-                    (ks.getCertificate(alias) as? X509Certificate)?.let { certs.add(it) }
-                } else if (ks.isKeyEntry(alias)) {
-                    (ks.getCertificateChain(alias))?.forEach { 
-                        (it as? X509Certificate)?.let { cert -> certs.add(cert) }
-                    }
+        val ks = java.security.KeyStore.getInstance(type)
+        ks.load(ByteArrayInputStream(data), password)
+        val aliases = ks.aliases()
+        while (aliases.hasMoreElements()) {
+            val alias = aliases.nextElement()
+            if (ks.isCertificateEntry(alias)) {
+                (ks.getCertificate(alias) as? X509Certificate)?.let { certs.add(it) }
+            } else if (ks.isKeyEntry(alias)) {
+                (ks.getCertificateChain(alias))?.forEach {
+                    (it as? X509Certificate)?.let { cert -> certs.add(cert) }
                 }
             }
-        } catch (e: Exception) {
-            throw e
         }
         return certs
     }
-
-    // Deprecated alias for compatibility if needed, but we should use parseKeystore
-    fun parsePkcs12(data: ByteArray, password: CharArray?): List<X509Certificate> = parseKeystore(data, password, "PKCS12")
-
 
     fun getFingerprint(cert: X509Certificate, algorithm: String): String {
         return try {
@@ -165,13 +152,6 @@ class X509ParserService {
         }
         if (contentOffset + contentLength > der.size) return null
         return der.copyOfRange(contentOffset, contentOffset + contentLength)
-    }
-
-    private fun cleanPem(pem: String): String {
-
-        return pem.replace("-----BEGIN CERTIFICATE-----", "")
-            .replace("-----END CERTIFICATE-----", "")
-            .replace("\\s".toRegex(), "")
     }
 
     companion object {
