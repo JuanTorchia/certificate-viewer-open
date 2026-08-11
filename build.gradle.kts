@@ -38,11 +38,11 @@ dependencies {
     }
 
     testImplementation("junit:junit:4.13.2")
-    add("integrationTestImplementation", "org.junit.jupiter:junit-jupiter:6.1.2")
+    add("integrationTestImplementation", "org.junit.jupiter:junit-jupiter:6.1.3")
     add("integrationTestImplementation", "org.jetbrains.kotlin:kotlin-stdlib:2.4.0-RC2")
     add("integrationTestImplementation", "org.kodein.di:kodein-di-jvm:7.33.0")
     add("integrationTestImplementation", "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0")
-    add("integrationTestRuntimeOnly", "org.junit.platform:junit-platform-launcher:6.1.2")
+    add("integrationTestRuntimeOnly", "org.junit.platform:junit-platform-launcher:6.1.3")
 }
 
 java {
